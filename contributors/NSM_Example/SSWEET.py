@@ -407,7 +407,7 @@ def Map_Plot_Eval(datapath, RegionTest, yaxis, error_metric):
     centeroid = df_map.dissolve().centroid
 
     # Create a Map instance
-    m = folium.Map(location=[centeroid.y[0], centeroid.x[0]], tiles = 'Stamen Terrain', zoom_start=8, 
+    m = folium.Map(location=[centeroid.y[0], centeroid.x[0]], tiles = 'OpenStreetMap', zoom_start=8, 
                    control_scale=True)
     #add legend to map
     if error_metric == 'KGE':
