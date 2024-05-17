@@ -3,7 +3,7 @@
 # 10-19-2023
 
 # NSM Packages
-from National_Snow_Model import SWE_Prediction
+from scripts import National_Snow_Model
 import os
 # Dataframe Packages
 import numpy as np
@@ -21,7 +21,7 @@ import rasterstats as rs
 
 # Data Access Packages
 import earthaccess as ea
-from nsidc_fetch import download, format_date, format_boundingbox
+from scripts import nsidc_fetch
 import h5py
 import pickle
 import tensorflow as tf
@@ -44,7 +44,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-class NSM_SCA(SWE_Prediction):
+class NSM_SCA(National_Snow_Model.SWE_Prediction):
 
     def __init__(self, cwd: Union[str, Path], datapath: Union[str, Path], date: Union[str, datetime], delta=7, timeDelay=3, threshold=0.2, Regions = ['N_Sierras']):
         """
@@ -70,7 +70,7 @@ class NSM_SCA(SWE_Prediction):
         self.Regions = Regions
         
         # Call superclass constructor
-        SWE_Prediction.__init__(self, cwd=str(cwd),datapath=str(datapath), date=date.strftime("%Y-%m-%d"), delta=delta, Regions = self.Regions)
+        National_Snow_Model.SWE_Prediction.__init__(self, cwd=str(cwd),datapath=str(datapath), date=date.strftime("%Y-%m-%d"), delta=delta, Regions = self.Regions)
 
         self.timeDelay = timeDelay
         self.delayedDate = date - pd.Timedelta(days=timeDelay)
@@ -111,7 +111,7 @@ class NSM_SCA(SWE_Prediction):
             dataFolder = self.SCA_folder
 
 
-            #putting in try except to speed up predictions if files are already downloaded
+            #putting in try except to speed up predictions if files are already nsidc_fetch.downloaded
             try:
                 DOY = str(date(int(self.date[:4]), int(self.date[5:7]), int(self.date[8:])).timetuple().tm_yday)
                 self.DOYkey = self.date[:4]+DOY
@@ -468,7 +468,7 @@ def fetchGranules(boundingBox: list[float, float, float, float],
                 date (datetime, str): The start date of the data to fetch.
                 dataFolder (Path, str): The folder to save the data to, also used to check for existing data.
                 extentDF (GeoDataFrame): A dataframe containing the horizontal and vertical tile numbers and their boundaries
-                shouldDownload (bool): Whether to fetch the data from the API or not.
+               shouldDownload (bool): Whether to fetch the data from the API or not.
 
             Returns:
                 df (GeoDataFrame): A dataframe of the granules that intersect with the bounding box
@@ -497,15 +497,15 @@ def fetchGranules(boundingBox: list[float, float, float, float],
     #display(cells)
     return cells
     missingCells = cells[cells["filepath"] == ''][["h", "v"]].to_dict("records")
-    attempts = 3  # how many times it will try and download the missing granules
+    attempts = 3  # how many times it will try and nsidc_fetch.download the missing granules
     while shouldDownload and len(missingCells) > 0 and attempts > 0:
         # TODO test function that fetches missing granules from NASA
-        print(f"Missing {len(missingCells)} granules for {day}, downloading")
-        temporal = format_date(date)  # Format date as YYYY-MM-DD
-        bbox = format_boundingbox(boundingBox)  # Format bounding box as "W,S,E,N"
+        print(f"Missing {len(missingCells)} granules for {day}, nsidc_fetch.downloading")
+        temporal = nsidc_fetch.format_date(date)  # Format date as YYYY-MM-DD
+        bbox = nsidc_fetch.format_boundingbox(boundingBox)  # Format bounding box as "W,S,E,N"
         version = "2" if date > datetime(2018, 1, 1) else "1"  # Use version 1 if date is before 2018
         year = date.year if date.month >= 10 else date.year - 1  # Water years start on October 1st
-        download("VNP10A1F", version, temporal, bbox, dataFolder.joinpath(f"{year}-{year + 1}NASA"), mode="async")
+        nsidc_fetch.download("VNP10A1F", version, temporal, bbox, dataFolder.joinpath(f"{year}-{year + 1}NASA"), mode="async")
         cells["filepath"] = cells.apply(
             lambda x: granuleFilepath(createGranuleGlobpath(dataFolder, date, x['h'], x['v'])),
             axis=1
@@ -566,7 +566,7 @@ def fetchGranulesRange(boundingBox: list[float, float, float, float],
     # check and see if we already have the data for that day
     for date in pd.date_range(startDate, endDate, freq=frequency):
         # for each granule, check if we have the data
-        granules = fetchGranules(boundingBox, dataFolder, date, cells, shouldDownload=False)
+        granules = fetchGranules(boundingBox, dataFolder, date, cells,shouldDownload=False)
 
         missingCells = granules[granules["filepath"] == ''][["h", "v"]].to_dict("records")
         if len(missingCells) > 0:

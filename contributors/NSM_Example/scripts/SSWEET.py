@@ -407,7 +407,11 @@ def Map_Plot_Eval(datapath, RegionTest, yaxis, error_metric):
     centeroid = df_map.dissolve().centroid
 
     # Create a Map instance
-    m = folium.Map(location=[centeroid.y[0], centeroid.x[0]], tiles = 'OpenStreetMap', zoom_start=8, 
+    m = folium.Map(location=[centeroid.y[0],
+                             centeroid.x[0]], 
+                   tiles='http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+                    attr="Sources: National Geographic, Esri, Garmin, HERE, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, INCREMENT P",
+                   zoom_start=8, 
                    control_scale=True)
     #add legend to map
     if error_metric == 'KGE':
