@@ -1,7 +1,7 @@
 #created by Dr. Ryan C. Johnson as part of the Cooperative Institute for Research to Operations in Hydrology (CIROH)
 # SWEET supported by the University of Alabama and the Alabama Water Institute
 # 10-19-2023
-
+import warnings; warnings.filterwarnings("ignore")
 import os
 from os import listdir
 from os.path import isfile, join
@@ -30,7 +30,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 import threading  # this is the threading library
-import warnings; warnings.filterwarnings("ignore")
+
 
 import lightgbm as lgbm
 from lightgbm import LGBMRegressor
@@ -112,7 +112,6 @@ def Model_train(cwd, epochs, RegionTrain, RegionTest, RegionObs_Train, RegionObs
         LD4=64
         LD5=32
         LD6=16
-        LD7=5
 
         input_1 = layers.Input(shape=(shape[1],))
         x = layers.Dense(LD1, activation="relu")(input_1)
