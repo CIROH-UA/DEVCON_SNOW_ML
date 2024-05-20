@@ -1,17 +1,17 @@
-# Snow-Extrapolation - ML Algorithm Optimization for Operational Snow-Water-Equivalent Estimation
+# ML Algorithm Optimization for Snow-Water-Equivalent Estimation
 
 This workbook builds on the ongoing Cooperative Institute for Research-to-Operations in Hydrology ([CIROH](https://ciroh.ua.edu/)) machine learning snow modeling project to provide operational, near-real-time snow-water-equivalent (SWE) estimates for updating the state of the snowpack within the National Water Model ([NWM](https://water.noaa.gov/about/nwm)).
 
 The [Getting started](./Getting%20Started.md) file will help new users create a virtual environment and install the correct packages using the [requirements.text](./requirements.txt).
 
-## National-Snow-Model Summary
+## Snow-Model Summary
 
 Snow-derived water is a critical hydrological component for characterizing the quantity of water available for domestic, recreation, agriculture, and power generation in the western United States.
 Advancing the efficiency and optimization of these aspects of water resources management requires an enhanced characterization of the snow state variable, particularly the essential global inputs of snow-water-equivalent (SWE), peak SWE, and snowmelt onset for hydrological models.
 While physically-based models that characterize the feedbacks and interactions between influencing factors predict SWE values well in homogeneous settings, these models exhibit limitations for CONUS-scale deployment due to challenges attributed to spatial resolution, landscape heterogeneity, and computational intensity. 
-Leveraging a collaborative partnership between the Alabama Water Institute (AWI) at the University of Alabama (UA) and the University of Utah (UU), we address these limitations through the NSM as a data-driven machine learning (ML) platform with a modular structure to account for the heterogeneity of climate and topographical influences on SWE across the western United States.
+Leveraging a collaborative partnership between the Alabama Water Institute (AWI) at the University of Alabama (UA) and the University of Utah (UU), we address these limitations through a data-driven machine learning (ML) platform with a modular structure to account for the heterogeneity of climate and topographical influences on SWE across the western United States.
 The model consists of twenty-three regionally specific sub-models tailored to the unique topography and hydroclimate phenomena in the Western U.S., exhibiting an RMSE less than 8 cm and a coefficient of determination approaching 0.99 on predictions spanning the 2013-2017 training period.
-The NSM pipeline assimilates nearly 700 snow telemetry (SNOTEL) and California Data Exchange Center (CDEC) sites and combines with processed lidar-derived terrain features for the prediction of a 1 km x 1 km SWE inference in critical snowsheds.
+The model pipeline assimilates nearly 700 snow telemetry (SNOTEL) and California Data Exchange Center (CDEC) sites and combines with processed lidar-derived terrain features for the prediction of a 1 km x 1 km SWE inference in critical snowsheds.
 
 ## Workbook Summary: Description and Goals
 
