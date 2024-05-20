@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore")
 
 class NSM_SCA(National_Snow_Model.SWE_Prediction):
 
-    def __init__(self, cwd: Union[str, Path], datapath: Union[str, Path], date: Union[str, datetime], delta=7, timeDelay=3, threshold=0.2, Regions = ['N_Sierras']):
+    def __init__(self, cwd: Union[str, Path], datapath: Union[str, Path], date: Union[str, datetime], delta=7, timeDelay=3, threshold=0.2, Regions = ['N_Sierras'], modeltype="MLP"):
         """
             Initializes the NSM_SCA class by calling the superclass constructor.
 
@@ -68,6 +68,7 @@ class NSM_SCA(National_Snow_Model.SWE_Prediction):
    
         
         self.Regions = Regions
+        self.modeltype = modeltype
         
         # Call superclass constructor
         National_Snow_Model.SWE_Prediction.__init__(self, cwd=str(cwd),datapath=str(datapath), date=date.strftime("%Y-%m-%d"), delta=delta, Regions = self.Regions)
@@ -316,15 +317,19 @@ class NSM_SCA(National_Snow_Model.SWE_Prediction):
         else:
             # change all na values to prevent scaling issues
             forecast_data[forecast_data < -9000] = -10
-
-            # load and scale data
-
-            # set up model checkpoint to be able to extract best models
+            
             checkpoint_filepath = self.cwd + '/Model/' + Region + '/'
-            model = keras.models.load_model(f"{checkpoint_filepath}{Region}_model.keras")
-            #model = checkpoint_filepath + Region + '_model.h5'
-            #print(model)
-            #model = load_model(model)
+            # load and scale data
+            if self.modeltype == "MLP":
+                # set up model checkpoint to be able to extract best models
+                model = keras.models.load_model(f"{checkpoint_filepath}{Region}_model.keras")
+                #model = checkpoint_filepath + Region + '_model.h5'
+                #print(model)
+                #model = load_model(model)
+                
+            elif self.modeltype == "GBM":
+                model = pickle.load(open(f"{checkpoint_filepath}{Region}_lgbm_model.pkl", "rb")) 
+            
             
             # load SWE scaler
             SWEmax = np.load(f"{checkpoint_filepath}{Region}_SWEmax.npy")

@@ -31,9 +31,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 import threading  # this is the threading library
 
-
-import lightgbm as lgbm
-from lightgbm import LGBMRegressor
+keras.utils.set_random_seed(801)
 
 def atof(text):
     try:
