@@ -21,43 +21,6 @@ The most notable error appear at locations below 1,500m and above 2,900, ephemer
 We encourage users to explore other ML algorithms, such as other neural networks, Long-Short-Term-Memory, tree-based, and even simple regression algorithms such as Ordinary Least Squares.
 Model evaluation will form a critical element of determing differences in algorithm performance, and the Standardized Snow Water Equivalent Evaluation Tool ([SSWEET](https://github.com/whitelightning450/Standardized-Snow-Water-Equivalent-Evaluation-Tool)) will serve as a standardized method to evaluate the different algorithm architectures.
 
-## Creating Stable CONDA Environment
-
-* Go to home directory
-```
-cd ~
-```
-* Create a envs directory
-```
-mkdir envs
-```
-* Create .condarc file and link it to a text file
-```
-touch .condarc
-
-ln -s .condarc condarc.txt
-```
-* Add the below lines to the condarc.txt file
-```
-# .condarc
-envs_dirs:
- - ~/envs
-```
-* Restart your server
-
-
-## Files
-
-* `.gitignore`
-<br> Globally ignored files by `git` for the project.
-* `environment.yml`
-<br> `conda` environment description needed to run this project.
-* `README.md`
-
-### `scripts` and `requirements.txt`
-All helper utilities and updated requirements.txt to replicate the working environemnt should be included in the project submissin package.
-
-
 ### Data
 
 All data will be provided to participants with cloud access to either the CIROH publicly accessible Amazon Web Services (AWS) S3 storage or via Box.
@@ -69,24 +32,3 @@ Project data includes:
 
 The data folder contains pre-processed model training dataframes of approximately 7,000 1-km grid locations to limit the amount of time spent on data processing tasks.
 While a key and essential component of any ML objective, data pre-processing and feature engineering are not a focus of this workbook.
-
-### Existing methods
-
-The current NSM uses the same 7-layer deep neural network for each of the 23 regions.
-While regionally-optimized Light Gradient Boosted Models (LGBM) and Extreme Gradient Boosted (XGBoost) algorithms were part of the original model development phase, the standard 7-layer multilayered perceptron (MLP) neural network demonstrated higher overall prediction skill and efficiency than the tree-based models, notably during prolong snow-drought.
-Existing model research and development explores and compares different algorithms, with the best-performing algorithm transitioning to become optimized.
-
-
-### Tasks
-
-The following tasks are expected to be completed before the Hack Week and will be made available to participants a week before the event:
-* Create your own Github account if you do not have one
-* Fork this repository to your personal account
-* Download [Git Desktop](https://desktop.github.com/) and clone the repository to your machine. Note, if you are comfortable with the command line process using git, this is an acceptable approach
-* Run through the provided steps in the Getting Started page to set up your appropriate virtual environment
-* Successfully run the Sierra Nevada region(s) of the NSM
-* Review and develop and understanding the model training and development steps
-* Review ML literature and come prepared with algorithms/approaches to enter the Hack Week with explicit algorithm and coding goals.
-
-
-
