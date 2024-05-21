@@ -29,7 +29,7 @@ import rasterio
 import geopandas as gpd
 from shapely.geometry import Point
 import xarray as xr
-import netCDF4 as nc
+# import netCDF4 as nc
 #from mpl_toolkits.basemap import Basemap
 from matplotlib.colors import LinearSegmentedColormap
 import folium
@@ -39,10 +39,10 @@ import rioxarray as rxr
 import earthpy as et
 import earthpy.spatial as es
 import datetime as dt
-from netCDF4 import date2num,num2date
-from osgeo import osr
+# from netCDF4 import date2num,num2date
+# from osgeo import osr
 #import warningspip
-from pyproj import CRS
+# from pyproj import CRS
 import requests
 import geojson
 import pandas as pd
@@ -58,7 +58,7 @@ import threading
 import bz2
 
 #import contextily as ctx
-import ulmo
+# import ulmo
 from datetime import timedelta
 
 
@@ -101,16 +101,18 @@ warnings.filterwarnings("ignore")
 
 
 class SWE_Prediction():
-    def __init__(self,cwd, area, date, prev_year, day_interval=7, delta=7, timeDelay=0, threshold=0.2): # also need to update threshold in AgumentGeoDF func
+    def __init__(self,cwd, datapath, area, date, modeltype, prev_year, day_interval=7, delta=7, timeDelay=0, threshold=0.2): # also need to update threshold in AgumentGeoDF func
         self = self
         self.area = area
         self.date = date
+        self.modeltype = modeltype
         self.prevdate = pd.to_datetime(date)-timedelta(days=day_interval)
         self.prevdate = self.prevdate.strftime('%Y-%m-%d')
         self.prev_year = prev_year
-
+        
         #set path directory
         self.cwd = cwd
+        self.datapath = datapath
         
         """
             Initializes the NSM_SCA class.
@@ -133,16 +135,16 @@ class SWE_Prediction():
         # self.timeDelay = timeDelay
         self.delayedDate = date - pd.Timedelta(days=timeDelay)
 
-        self.SCA_folder = self.cwd + "//Data//VIIRS_SCA//2021-2022NASA"
+        self.SCA_folder = self.cwd + "//extrapolation//Data//VIIRS_SCA//2021-2022NASA"
         # print(self.cwd)
         # print(self.SCA_folder)
         # self.SCA_folder = r"C:/Users/Dane Liljestrand/Desktop/NSM/SCA_test/Data/VIIRS_SCA//2022-2023NASA"
         self.threshold = threshold * 100  # Convert percentage to values used in VIIRS NDSI
 
-#         self.auth = ea.login(strategy="netrc")
-        self.auth = ea.login()
-        if self.auth is None:
-            print("Error logging into Earth Data account. Things will probably break")
+# #         self.auth = ea.login(strategy="netrc")
+#         self.auth = ea.login()
+#         if self.auth is None:
+#             print("Error logging into Earth Data account. Things will probably break")
 
 
 
@@ -439,7 +441,7 @@ class SWE_Prediction():
     
     
     def Get_Monitoring_Data(self):
-        GM_template = pd.read_csv(self.cwd+'/Data/Pre_Processed_DA/ground_measures_features_template.csv')
+        GM_template = pd.read_csv(self.cwd+'//extrapolation/extrapolation/Data/Pre_Processed_DA/ground_measures_features_template.csv')
         GM_template = GM_template.rename(columns = {'Unnamed: 0': 'station_id'})
         GM_template.index =GM_template['station_id']
         cols = ['Date']
@@ -507,12 +509,15 @@ class SWE_Prediction():
         #SWE_df = SWE_df.rename(columns = {'Unnamed: 0': 'station_id'})
         #SWE_df = SWE_df.set_index('station_id')
 
-        SWE_df.to_csv(self.cwd+'/Data/Pre_Processed_DA/ground_measures_features_'+date+'.csv')
+        SWE_df.to_csv(self.cwd+'//extrapolation/extrapolation/Data/Pre_Processed_DA/ground_measures_features_'+date+'.csv')
         
         
     def get_SNOTEL_Threaded(self, sitecode, start_date, end_date):
         #print(sitecode)
-
+        # Check if the sitecode contains '_CA_SNTL'
+        # if '_CA_SNTL' not in sitecode:
+        #     return
+        
         #This is the latest CUAHSI API endpoint
         wsdlurl = 'https://hydroportal.cuahsi.org/Snotel/cuahsi_1_1.asmx?WSDL'
 
@@ -544,7 +549,7 @@ class SWE_Prediction():
             self.SWE_df[self.date].loc[sitecode] = SNOTEL_SWE['value'].values[0]
 
         except:
-            print('Unable to fetch SWE data for site ', sitecode, 'SWE value: -9999')
+            # print('Unable to fetch SWE data for site ', sitecode, 'SWE value: -9999')
             #end_date=end_date.strftime('%Y-%m-%d')
             #SNOTEL_SWE = pd.DataFrame(-9999, columns = ['station_id', end_date], index =[1])
             #SNOTEL_SWE['station_id'] = sitecode
@@ -573,7 +578,7 @@ class SWE_Prediction():
             CDEC_SWE = CDEC_SWE.rename(columns={'W.C.': end_date})
 
         except:
-            print('Unable to fetch SWE data for site ', station_id, 'SWE value: -9999')
+            # print('Unable to fetch SWE data for site ', station_id, 'SWE value: -9999')
             CDEC_SWE = pd.DataFrame(-9999, columns = ['station_id', end_date], index =[1])
             CDEC_station_id = 'CDEC:'+station_id
             CDEC_SWE['station_id'] = CDEC_station_id
@@ -587,7 +592,7 @@ class SWE_Prediction():
         
 
     def Get_Monitoring_Data_Threaded(self):
-        GM_template = pd.read_csv(self.cwd+'/Data/Pre_Processed_DA/ground_measures_features_template.csv')
+        GM_template = pd.read_csv(self.cwd+'/extrapolation/Data/Pre_Processed_DA/ground_measures_features_template.csv')
         GM_template = GM_template.rename(columns = {'Unnamed: 0': 'station_id'})
         GM_template.index =GM_template['station_id']
         cols = ['Date']
@@ -624,7 +629,7 @@ class SWE_Prediction():
         
          # create new threads and append them to the list of threads
         for site in self.CDECsites:
-            print(site)
+            # print(site)
             # functions with arguments must have an 'empty' arg at the end of the passed 'args' tuple
             t = threading.Thread(target=self.get_CDEC_Threaded, args=(site, sensor_id, resolution, start_date, date.strftime('%Y-%m-%d')))
             threads.append(t)
@@ -643,7 +648,7 @@ class SWE_Prediction():
         
          # create new threads and append them to the list of threads
         for site in self.Snotelsites:
-            print(site)
+            # print(site)
             # functions with arguments must have an 'empty' arg at the end of the passed 'args' tuple
             t = threading.Thread(target=self.get_SNOTEL_Threaded, args=(site,  start_date, date))
             threads.append(t)
@@ -675,24 +680,24 @@ class SWE_Prediction():
         self.SWE_df=self.SWE_df.rename(columns = {'index': 'station_id'})
         self.SWE_df = self.SWE_df.set_index('station_id')
 
-        self.SWE_df.to_csv(self.cwd+'/Data/Pre_Processed_DA/ground_measures_features_'+date+'.csv')
+        self.SWE_df.to_csv(self.cwd+'/extrapolation/Data/Pre_Processed_DA/ground_measures_features_'+date+'.csv')
   
     #Data Assimilation script, takes date and processes to run model.            
     def Data_Processing(self):
           
 
         #load ground truth values (SNOTEL): Testing
-        obs_path = self.cwd+'/Data/Pre_Processed_DA/ground_measures_features_' + self.date + '.csv'
+        obs_path = self.cwd+'/extrapolation/Data/Pre_Processed_DA/ground_measures_features_' + self.date + '.csv'
         self.GM_Test = pd.read_csv(obs_path)
 
         #load ground truth values (SNOTEL): previous week, these have Na values filled by prev weeks obs +/- mean region Delta SWE
-        obs_path = self.cwd+'\\'+self.area+'/Data/Processed/DA_ground_measures_features_' + self.prevdate + '.csv'
+        obs_path = self.cwd+'//extrapolation//'+self.area+'/Data/Processed/DA_ground_measures_features_' + self.prevdate + '.csv'
         self.GM_Prev = pd.read_csv(obs_path)
         colrem = ['Region','Prev_SWE','Delta_SWE']
         self.GM_Prev = self.GM_Prev.drop(columns =colrem)
 
         #All coordinates of 1 km polygon used to develop ave elevation, ave slope, ave aspect
-        path = self.cwd+'\\'+self.area+'/Data/Processed/Region_Pred.pkl'
+        path = self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Region_Pred.pkl'
         #load regionalized geospatial data
         self.RegionTest = open(path, "rb")
         self.RegionTest = pickle.load(self.RegionTest)
@@ -702,10 +707,11 @@ class SWE_Prediction():
         for region in self.Region_list:
             #The below file will serve as a starting point, if interested in making predictions for a specific region, set other
             #locations to only 1 location (vs. all region locations)
-            self.prev_SWE[region] = pd.read_hdf(self.cwd+'\\'+self.area+'/Predictions/predictions'+ self.prevdate+'.h5', key = region)
+            self.prev_SWE[region] = pd.read_hdf(self.cwd+'//extrapolation//'+self.area+'/Predictions/predictions'+ self.prevdate+'.h5', key = region)
             self.prev_SWE[region] = pd.DataFrame(self.prev_SWE[region][self.prevdate])
             self.prev_SWE[region] = self.prev_SWE[region].rename(columns = {self.prevdate: 'prev_SWE'})
-
+        os.remove(self.cwd+'//extrapolation//'+self.area+'/Predictions/predictions'+ self.prevdate+'.h5')
+        
         #change first column to station id
         self.GM_Test = self.GM_Test.rename(columns = {'Unnamed: 0':'station_id'})
         self.GM_Prev = self.GM_Prev.rename(columns = {'Unnamed: 0':'station_id'})
@@ -721,7 +727,7 @@ class SWE_Prediction():
         self.GM_Test = self.GM_Test.rename(columns ={'variable': 'Date', 'value':'SWE'})
 
         #load ground truth meta
-        self.GM_Meta = pd.read_csv(self.cwd+'/Data/Pre_Processed/ground_measures_metadata.csv')
+        self.GM_Meta = pd.read_csv(self.cwd+'/extrapolation/Data/Pre_Processed/ground_measures_metadata.csv')
 
         #merge testing ground truth location metadata with snotel data
         self.GM_Test = self.GM_Meta.merge(self.GM_Test, how='inner', on='station_id')
@@ -769,7 +775,7 @@ class SWE_Prediction():
             self.Future_GM_Pred = pd.concat(dfs_to_concat)
 
         #Need to save 'updated non-na' df's
-        GM_path = self.cwd+'//'+self.area+'/Data/Processed/DA_ground_measures_features_'+ self.date + '.csv'
+        GM_path = self.cwd+'//extrapolation//'+self.area+'/Data/Processed/DA_ground_measures_features_'+ self.date + '.csv'
 
         self.Future_GM_Pred.to_csv(GM_path)
 
@@ -834,7 +840,7 @@ class SWE_Prediction():
 
             #save dictionaries as pkl
         # create a compressed binary pickle file 
-        RVal = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl', 'wb')
+        RVal = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl', 'wb')
         
         # write the python object (dict) to pickle file
         pickle.dump(self.RegionTest,RVal)
@@ -915,7 +921,7 @@ class SWE_Prediction():
 #         #load first SWE observation forecasting dataset with prev and delta swe for observations. 
         
 #         #load regionalized forecast data
-#         ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
+#         ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
 
 #         self.Forecast = pickle.load(ifile)
        
@@ -944,11 +950,11 @@ class SWE_Prediction():
 #             self.Prev_df = self.Prev_df.append(pd.DataFrame(self.predictions[Region][self.date]))
 #             self.Prev_df = pd.DataFrame(self.Prev_df)
 
-#             self.predictions[Region].to_hdf(self.cwd+'//'+self.area+'/Predictions/predictions'+self.date+'.h5', key = Region)
+#             self.predictions[Region].to_hdf(self.cwd+'//extrapolation//'+self.area+'/Predictions/predictions'+self.date+'.h5', key = Region)
 
 
 #         #load submission DF and add predictions, if locations are removed or added, this needs to be modified
-#         self.subdf = pd.read_csv(self.cwd+'//'+self.area+'/Predictions/submission_format_'+self.area+'_'+self.prevdate+'.csv')
+#         self.subdf = pd.read_csv(self.cwd+'//extrapolation//'+self.area+'/Predictions/submission_format_'+self.area+'_'+self.prevdate+'.csv')
 #         self.subdf.index = list(self.subdf.iloc[:,0].values)
 #         self.subdf = self.subdf.iloc[:,1:]
 
@@ -957,7 +963,7 @@ class SWE_Prediction():
 #         self.Prev_df = self.Prev_df.loc[self.sub_index]
 #         self.subdf[self.date] = self.Prev_df[self.date].astype(float)
 #         #subdf.index.names = [' ']
-#         self.subdf.to_csv(self.cwd+'//'+self.area+'/Predictions/submission_format_'+self.area+'_'+self.date+'.csv')
+#         self.subdf.to_csv(self.cwd+'//extrapolation//'+self.area+'/Predictions/submission_format_'+self.area+'_'+self.date+'.csv')
   
 #     #set up model prediction function
 #     def Predict(self, Region):
@@ -977,7 +983,7 @@ class SWE_Prediction():
 #         #load and scale data
 
 #         #set up model checkpoint to be able to extract best models
-#         checkpoint_filepath = self.cwd+'/Model/Prev_SWE_Models_Final/' +Region+ '/'
+#         checkpoint_filepath = self.cwd+'//extrapolation/Model/Prev_SWE_Models_Final/' +Region+ '/'
 #         model = checkpoint_filepath+Region+'_model.h5'
 #         print(model)
 #         model=load_model(model)
@@ -1098,7 +1104,7 @@ class SWE_Prediction():
         target_variable_xr = target_variable_xr.rename("SWE")
 
         #save as netCDF
-        target_variable_xr.to_netcdf(self.cwd+'//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+self.date+'.nc')
+        target_variable_xr.to_netcdf(self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+self.date+'.nc')
         
         #show plot
         print('File conversion to netcdf complete')
@@ -1155,7 +1161,7 @@ class SWE_Prediction():
         self.SWE_array = self.DFG['SWE'].values.reshape(1,len(self.latrange),len(self.lonrange))
 
        # create nc filepath
-        fn = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+self.date+'.nc'
+        fn = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+self.date+'.nc'
         
         # make nc file, set lat/long, time
         ds = nc.Dataset(fn, 'w', format = 'NETCDF4')
@@ -1260,7 +1266,7 @@ class SWE_Prediction():
         self.SWE_array = self.DFG['SWE'].values.reshape(1,len(self.latrange),len(self.lonrange))
 
        # create nc filepath
-        fn = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+self.date+'_CONUS.nc'
+        fn = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+self.date+'_CONUS.nc'
         
         # make nc file, set lat/long, time
         ds = nc.Dataset(fn, 'w', format = 'NETCDF4')
@@ -1365,7 +1371,7 @@ class SWE_Prediction():
         self.SWE_array = self.DFG['SWE'].values.reshape(1,len(self.latrange),len(self.lonrange))
 
         # create nc filepath
-        fn = self.cwd +'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
+        fn = self.cwd +'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
 
         # make nc file, set lat/long, time
         ncfile  = nc.Dataset(fn, 'w', format = 'NETCDF4')
@@ -1457,7 +1463,7 @@ class SWE_Prediction():
         
         
         #load file
-        fn = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+ self.date+'.nc'
+        fn = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_MAP_1km_'+ self.date+'.nc'
         SWE = nc.Dataset(fn)
 
         #Get area of interest
@@ -1500,7 +1506,7 @@ class SWE_Prediction():
         
         
         #load file
-        fn = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
+        fn = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
         
         #open netcdf file with rioxarray
         xr = rxr.open_rasterio(fn)
@@ -1553,7 +1559,7 @@ class SWE_Prediction():
         
         #code for webbrowser app
         if web == True:
-            output_file =  self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'.html'
+            output_file =  self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'.html'
             m.save(output_file)
             webbrowser.open(output_file, new=2)
             
@@ -1565,7 +1571,7 @@ class SWE_Prediction():
     #produce an interactive plot using Folium
     def plot_interactive_SWE(self, pinlat, pinlong, web):
         print('loading file')
-        fnConus = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
+        fnConus = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
 
         #xr = rxr.open_rasterio(fn)
         xrConus = rxr.open_rasterio(fnConus)
@@ -1577,7 +1583,7 @@ class SWE_Prediction():
 
         print("Converting to GeoDataFrame...")
         SWE_pd = pd.DataFrame.from_dict({'SWE': elevation, 'x': x, 'y': y})
-        SWE_threshold = 0.1
+        SWE_threshold = 0.2
         SWE_pd = SWE_pd[SWE_pd['SWE'] > SWE_threshold]
         SWE_gdf = gpd.GeoDataFrame(
             SWE_pd, geometry=gpd.points_from_xy(SWE_pd.x, SWE_pd.y), crs=4326)
@@ -1630,7 +1636,7 @@ class SWE_Prediction():
         
          #code for webbrowser app
         if web == True:
-            output_file =  self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_Interactive.html'
+            output_file =  self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_Interactive.html'
             m.save(output_file)
             webbrowser.open(output_file, new=2)
 
@@ -1642,7 +1648,7 @@ class SWE_Prediction():
    
     def Geo_df(self):
         print('loading file')
-        fnConus = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
+        fnConus = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
 
        #requires the netCDF4 package rather than rioxarray
         xrConus = nc.Dataset(fnConus)
@@ -1716,7 +1722,7 @@ class SWE_Prediction():
              #code for webbrowser app
 
             if web == True:
-                output_file =  self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_Interactive.html'
+                output_file =  self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_Interactive.html'
                 m.save(output_file)
                 webbrowser.open(output_file, new=2)
 
@@ -1767,7 +1773,7 @@ class SWE_Prediction():
 
             HUCunit2 = 'huc'+str(HUC_len)
 
-            gdb_file = self.cwd+'//'+self.area+'/Data/WBD//WBD_' +HU+'_HU2_GDB/WBD_'+HU+'_HU2_GDB.gdb'
+            gdb_file = self.cwd+'//extrapolation//'+self.area+'/Data/WBD//WBD_' +HU+'_HU2_GDB/WBD_'+HU+'_HU2_GDB.gdb'
 
             # Get HUC unit from the .gdb file 
 
@@ -1782,7 +1788,7 @@ class SWE_Prediction():
           
     #These HUCS contain SWE    
     def HUC_SWE_read(self, HU, HUC):
-        H = h5py.File(self.cwd+'//'+self.area+'/Data/WBD/WBD_HUC_SWE.h5','r')
+        H = h5py.File(self.cwd+'//extrapolation//'+self.area+'/Data/WBD/WBD_HUC_SWE.h5','r')
         H_SWE = H[HU]['HUC8'][:].tolist()
         H_SWE= [str(i) for i in H_SWE]
         H.close()
@@ -1793,7 +1799,7 @@ class SWE_Prediction():
         print('Saving Key HUCs containing SWE to speed up spatial aggregation of geodataframes')
         HU_wSWE = list(df['geoid'])
         HU_wSWE = [int(i) for i in HU_wSWE]
-        f = h5py.File(self.cwd+'//'+self.area+'/Data/WBD/WBD_HUC_SWE.h5','a')
+        f = h5py.File(self.cwd+'//extrapolation//'+self.area+'/Data/WBD/WBD_HUC_SWE.h5','a')
         HU10 = f.create_group(HU)
         HUC8 = HU10.create_dataset(HUC, data = HU_wSWE)
         f.close()
@@ -1808,7 +1814,7 @@ class SWE_Prediction():
         #for i in np.arange(0,len(HU),1):
 
 
-        gdb_file = self.cwd+'//'+self.area+'/Data/WBD//WBD_' +HU[2:] +'_HU2_GDB/WBD_'+HU[2:]+'_HU2_GDB.gdb'
+        gdb_file = self.cwd+'//extrapolation//'+self.area+'/Data/WBD//WBD_' +HU[2:] +'_HU2_GDB/WBD_'+HU[2:]+'_HU2_GDB.gdb'
 
         # Get HUC unit from the .gdb file 
 
@@ -1934,7 +1940,7 @@ class SWE_Prediction():
         SWE_array = DFG['Mean_SWE'].values.reshape(1,len(latrange),len(lonrange))
 
         # create nc filepath
-        fn = self.cwd+'//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
+        fn = self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/SWE_'+self.date+'_compressed.nc'
         print('Setting up NetCDF4')
         # make nc file, set lat/long, time
         ncfile  = nc.Dataset(fn, 'a', format = 'NETCDF4')
@@ -2061,7 +2067,7 @@ class SWE_Prediction():
          #code for webbrowser app
         #self.SWE_gdf = SWE_gdf
         #if web == True:
-        output_file =  self.cwd+'//'+self.area+'/Data/NetCDF/HUC8_Mean_SWE_'+self.date+'_HUC8.html'
+        output_file =  self.cwd+'//extrapolation//'+self.area+'/Data/NetCDF/HUC8_Mean_SWE_'+self.date+'_HUC8.html'
         m.save(output_file)
         webbrowser.open(output_file, new=2)
 
@@ -2109,7 +2115,7 @@ class SWE_Prediction():
             Returns:
                 extent (list[float, float, float, float]): The extent of the prediction dataframe.
         """
-        Geo_df = pd.read_csv(self.cwd+'//'+self.area+'//'+self.area+'_Geo_df.csv', index_col='cell_id')
+        Geo_df = pd.read_csv(self.cwd+'//extrapolation//'+self.area+'//'+self.area+'_Geo_df.csv', index_col='cell_id')
 
         Geo_df_bounds = gpd.GeoDataFrame(Geo_df, geometry=gpd.points_from_xy(Geo_df.Long, Geo_df.Lat, crs="EPSG:4326"))
 
@@ -2150,7 +2156,7 @@ class SWE_Prediction():
             self.Forecast  # Check if forecast dataframe has been initialized
         except AttributeError:
             #load regionalized forecast data
-            ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
+            ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
             self.Forecast = pickle.load(ifile)
             ifile.close()
 
@@ -2178,8 +2184,8 @@ class SWE_Prediction():
             Augments the forecast dataframes with SCA data.
         """
         print("Calculating mean SCA for each geometry in each region...")
-        # ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_SCA_'+self.date + '.pkl','rb')
-        ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date+'.pkl','rb')
+        # ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_SCA_'+self.date + '.pkl','rb')
+        ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date+'.pkl','rb')
         self.Forecast = pickle.load(ifile)
         ifile.close()
 
@@ -2199,7 +2205,7 @@ class SWE_Prediction():
         # file.close()
 
         # Save augmented forecast dataframes 
-        path = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl', 'wb')
+        path = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl', 'wb')
         
         # write the python object (dict) to pickle file
         pickle.dump(self.Forecast,path)
@@ -2212,31 +2218,31 @@ class SWE_Prediction():
         # load first SWE observation forecasting dataset with prev and delta swe for observations.
 
         # if SCA:
-        #     path = self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_SCA_' + self.date + '.pkl'
+        #     path = self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_SCA_' + self.date + '.pkl'
         # else:
-        #     path = self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl'
-        path = self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl'
+        #     path = self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl'
+        path = self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl'
         # #self.plot = plot
         # #load first SWE observation forecasting dataset with prev and delta swe for observations. 
         
         # if SCA:
         #     #load regionalized forecast data
-        #     ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_SCA_'+self.date + '.pkl','rb')
+        #     ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_SCA_'+self.date + '.pkl','rb')
         #     self.Forecast = pickle.load(ifile)
         #     ifile.close()
         # else:
         #     #load regionalized forecast data
-        #     ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
+        #     ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
         #     self.Forecast = pickle.load(ifile)
         #     ifile.close()
 
         #load regionalized forecast data
-        ifile = bz2.BZ2File(self.cwd+'//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
+        ifile = bz2.BZ2File(self.cwd+'//extrapolation//'+self.area+'/Data/Processed/Prediction_DF_'+self.date + '.pkl','rb')
         self.Forecast = pickle.load(ifile)
         ifile.close()
 
         #load RFE optimized features
-        self.Region_optfeatures= pickle.load(open(self.cwd+"/Model/Prev_SWE_Models_Final/opt_features_prevSWE.pkl", "rb"))
+        self.Region_optfeatures = pickle.load(open(f"{self.datapath}/data/Optimal_Features.pkl", "rb"))
 
         #Reorder regions
         self.Forecast = {k: self.Forecast[k] for k in self.Region_list}
@@ -2246,8 +2252,8 @@ class SWE_Prediction():
         self.predictions ={}
         print ('Making predictions for: ', self.date)
 
-        if not os.path.exists(f"{self.cwd}//{self.area}//Predictions//{self.threshold}//Predictions"):
-            os.makedirs(f"{self.cwd}//{self.area}//Predictions//{self.threshold}//Predictions")
+        if not os.path.exists(f"{self.cwd}//extrapolation//{self.area}//Predictions"):
+            os.makedirs(f"{self.cwd}//extrapolation//{self.area}//Predictions")
         
         dfs_to_concat = []
 
@@ -2259,12 +2265,13 @@ class SWE_Prediction():
 
         self.Prev_df = pd.concat(dfs_to_concat, ignore_index=False) ########True?
         for Region in self.Region_list:
-            self.predictions[Region].to_hdf(f"{self.cwd}//{self.area}//Predictions//{self.threshold}//Predictions//predictions{self.date}.h5", key=Region)
-            self.predictions[Region].to_hdf(f"{self.cwd}//{self.area}//Predictions//predictions{self.date}.h5", key=Region)
+            ## self.predictions[Region].to_hdf(f"{self.cwd}//extrapolation//{self.area}//Predictions//{self.threshold}//Predictions//predictions{self.date}.h5", key=Region)
+            self.predictions[Region].to_hdf(f"{self.cwd}//extrapolation//{self.area}//Predictions//predictions{self.date}.h5", key=Region)
 
 
         #load submission DF and add predictions, if locations are removed or added, this needs to be modified
-        self.subdf = pd.read_csv(f"{self.cwd}//{self.area}//Predictions//{self.threshold}//Predictions//submission_format_{self.prevdate}.csv", index_col = 'cell_id')  
+        # self.subdf = pd.read_csv(f"{self.cwd}//extrapolation//{self.area}//Predictions//{self.threshold}//Predictions//submission_format_{self.prevdate}.csv", index_col = 'cell_id')  
+        self.subdf = pd.read_csv(f"{self.cwd}//extrapolation//{self.area}//Predictions//submission_format_{self.prevdate}.csv", index_col = 'cell_id')  
         # self.subdf.index = list(self.subdf.iloc[:, 0].values)
         # self.subdf = self.subdf.iloc[:, 1:]  # TODO replace with drop("cell_id")
 
@@ -2273,8 +2280,8 @@ class SWE_Prediction():
         self.Prev_df = self.Prev_df.loc[self.sub_index]
         self.subdf[self.date] = self.Prev_df[self.date].astype(float)
         #subdf.index.names = [' ']
-        self.subdf.to_csv(f"{self.cwd}//{self.area}//Predictions//{self.threshold}//Predictions//submission_format_{self.date}.csv")
-        # self.subdf.to_csv(f"{self.cwd}//{self.area}//Predictions//submission_format_{self.date}.csv")
+        # self.subdf.to_csv(f"{self.cwd}//extrapolation//{self.area}//Predictions//{self.threshold}//Predictions//submission_format_{self.date}.csv")
+        self.subdf.to_csv(f"{self.cwd}//extrapolation//{self.area}//Predictions//submission_format_{self.date}.csv")
 
 
     def Predict(self, Region, SCA=True):
@@ -2312,11 +2319,17 @@ class SWE_Prediction():
 
             #load and scale data
 
-            #set up model checkpoint to be able to extract best models
-            checkpoint_filepath = self.cwd + '//Model//Prev_SWE_Models_Final//' + Region + '//'
-            model = checkpoint_filepath + Region + '_model.h5'
-            print(model)
-            model=load_model(model)
+            checkpoint_filepath = self.cwd + '/Model/' + Region + '/'
+            # load and scale data
+            if self.modeltype == "MLP":
+                # set up model checkpoint to be able to extract best models
+                model = keras.models.load_model(f"{checkpoint_filepath}{Region}_model.keras")
+                #model = checkpoint_filepath + Region + '_model.h5'
+                #print(model)
+                #model = load_model(model)
+                
+            elif self.modeltype == "GBM":
+                model = pickle.load(open(f"{checkpoint_filepath}{Region}_lgbm_model.pkl", "rb")) 
 
             #load SWE scaler
             SWEmax = np.load(checkpoint_filepath+Region+'_SWEmax.npy')

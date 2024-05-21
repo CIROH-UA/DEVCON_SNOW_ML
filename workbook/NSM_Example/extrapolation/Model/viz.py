@@ -18,12 +18,12 @@ def plot_single_date(cwd, area, date):
             date (str): 'YYYY-MM-DD' - Date of model infrence to plot.
     """
     #load SWE predictions up to the end_date
-    preds=pd.read_csv(cwd+'\\'+area+'\Predictions\\20.0\\Predictions\\submission_format_'+date+'.csv', index_col = [0])
+    preds=pd.read_csv(cwd+'//extrapolation//'+area+'//Predictions//submission_format_'+date+'.csv', index_col = [0])
     preds.index.names=['cell_id']
 
     #load feature dataframe & area shapefile
-    Geo_df = pd.read_csv(cwd+'\\'+area+'\\'+area+'_Geo_df.csv', index_col='cell_id')
-    shapefile_path = cwd+'\\'+area+'\\'+area+'.shp'
+    Geo_df = pd.read_csv(cwd+'//extrapolation//'+area+'//'+area+'_Geo_df.csv', index_col='cell_id')
+    shapefile_path = cwd+'//extrapolation//'+area+'//'+area+'.shp'
     gdf_shapefile = gpd.read_file(shapefile_path)
 
     # Make Geodataframe for plotting
@@ -31,12 +31,16 @@ def plot_single_date(cwd, area, date):
     preds_gdf = gpd.GeoDataFrame(preds, geometry=gpd.points_from_xy(preds.Long, preds.Lat), crs="EPSG:4326")
 
     cmap = plt.cm.get_cmap('PuRd')  # Choose a colormap #'Blues' 'BuPu' 'jet' 'PuRd' 'viridis'
+    
+    # Create masks for zero and non-zero values
+    mask_zero = preds_gdf[date] == 0
+    mask_non_zero = preds_gdf[date] != 0
 
     date=date
-    fig, ax = plt.subplots(figsize=(6, 6))
-    preds_gdf.plot(ax=ax,column=date, marker='s',markersize =5, legend=True, colormap=cmap)
+    fig, ax = plt.subplots(figsize=(10, 10))
+    preds_gdf[mask_non_zero].plot(ax=ax, column=date, marker='s', markersize=200, legend=True, cmap=cmap, alpha=1)
     gdf_shapefile.plot(ax=ax, facecolor='none', edgecolor='black', linewidth=1)
-    # cx.add_basemap(ax, crs=preds_gdf.crs, zoom = 10)
+    cx.add_basemap(ax, crs=preds_gdf.crs.to_string(), source=cx.providers.Esri.WorldTerrain, alpha=0.5)
 
     # Set plot labels and title
     plt.xlabel('Longitude')
@@ -58,12 +62,12 @@ def plot_multiple_dates(cwd, area, end_date, num_subplots):
     """
      
     #load SWE predictions up to the end_date
-    preds=pd.read_csv(cwd+'\\'+area+'\Predictions\\20.0\\Predictions\\submission_format_'+end_date+'.csv', index_col = [0])
+    preds=pd.read_csv(cwd+'//extrapolation//'+area+'//Predictions//submission_format_'+end_date+'.csv', index_col = [0])
     preds.index.names=['cell_id']
 
     #load feature dataframe & area shapefile
-    Geo_df = pd.read_csv(cwd+'\\'+area+'\\'+area+'_Geo_df.csv', index_col='cell_id')
-    shapefile_path = cwd+'\\'+area+'\\'+area+'.shp'
+    Geo_df = pd.read_csv(cwd+'//extrapolation//'+area+'//'+area+'_Geo_df.csv', index_col='cell_id')
+    shapefile_path = cwd+'//extrapolation//'+area+'//'+area+'.shp'
     gdf_shapefile = gpd.read_file(shapefile_path)
 
     # Make Geodataframe for plotting
@@ -121,11 +125,11 @@ def plot_multiple_dates(cwd, area, end_date, num_subplots):
 
     # Adjust the spacing between subplots
     plt.tight_layout()
-    plt.savefig(cwd+'\\'+area+'\\Predictions\\20.0\\Predictions\\'+area+'_'+end_date+'_estimated_SWE.png', bbox_inches='tight')
+    # plt.savefig(cwd+'//extrapolation//'+area+'//Predictions//20.0//Predictions//'+area+'_'+end_date+'_estimated_SWE.png', bbox_inches='tight')
 
     plt.show()
 
-@staticmethod
+# @staticmethod
 def animate_SWE(cwd, area, end_date):
     """
     Create a matplotlib animation of multiple date model inferences.
@@ -136,12 +140,12 @@ def animate_SWE(cwd, area, end_date):
     """
 
     #load SWE predictions up to the end_date
-    preds=pd.read_csv(cwd+'\\'+area+'\Predictions\\20.0\\Predictions\\submission_format_'+end_date+'.csv', index_col = [0])
+    preds=pd.read_csv(cwd+'//extrapolation//'+area+'//Predictions//submission_format_'+end_date+'.csv', index_col = [0])
     preds.index.names=['cell_id']
 
     #load feature dataframe & area shapefile
-    Geo_df = pd.read_csv(cwd+'\\'+area+'\\'+area+'_Geo_df.csv', index_col='cell_id')
-    shapefile_path = cwd+'\\'+area+'\\'+area+'.shp'
+    Geo_df = pd.read_csv(cwd+'//extrapolation//'+area+'//'+area+'_Geo_df.csv', index_col='cell_id')
+    shapefile_path = cwd+'//extrapolation//'+area+'//'+area+'.shp'
     gdf_shapefile = gpd.read_file(shapefile_path)
 
     # Make Geodataframe for plotting
@@ -149,7 +153,7 @@ def animate_SWE(cwd, area, end_date):
     preds_gdf = gpd.GeoDataFrame(preds, geometry=gpd.points_from_xy(preds.Long, preds.Lat), crs="EPSG:4326")
     
     # Set up the figure and subplots
-    fig, ax = plt.subplots(figsize=(8,8))
+    fig, ax = plt.subplots(figsize=(10,10))
 
     # Get the column names with the dates. To begin on a later date change the starting column slice.
     date_columns = preds_gdf.columns[4:-1].tolist()
@@ -159,14 +163,19 @@ def animate_SWE(cwd, area, end_date):
         ax.clear()
         # Get the column name for the current frame
         date_column = '{}'.format(frame)
-        # Filter the data for the current frame
-        # current_data = preds_gdf[[date_column, 'geometry']]
-        # Plot the current frame
-        preds_gdf.plot(ax=ax,column=date_column, marker='s', markersize=25, cmap=cmap_ani, norm=norm)
+        # Create masks for zero and non-zero values
+        mask_zero = preds_gdf[date_column] == 0
+        mask_non_zero = preds_gdf[date_column] != 0
+
+        # Plot non-zero values
+        preds_gdf[mask_non_zero].plot(ax=ax, column=date_column, marker='s', markersize=260, cmap=cmap_ani, norm=norm, alpha=1)
+        
         gdf_shapefile.plot(ax=ax, facecolor='none', edgecolor='black', linewidth=1)
         # current_data.plot(ax=ax)
+        cx.add_basemap(ax, crs=preds_gdf.crs.to_string(), source=cx.providers.Esri.WorldTerrain, alpha=0.5)
         ax.set_title('{}'.format(date_column))
         ax.spines[['right', 'top']].set_visible(False)
+
 
     # Create a normalization instance for color mapping
     cmap_ani = plt.cm.get_cmap('PuRd')  # Choose a colormap #'Blues' 'BuPu' 'jet' 'PuRd' 'viridis'
@@ -180,20 +189,20 @@ def animate_SWE(cwd, area, end_date):
 
     # Create the animation
     ani = animation.FuncAnimation(fig, update, frames=date_columns, interval=1000)
-    plt.tight_layout()
+    # plt.tight_layout()
 
-    # save animation - may need to conda install ffmpeg, pip install might not work
-    f = cwd+'\\'+area+'\\Predictions\\20.0\\Predictions\\'+end_date+'_SWE.mp4'
-    print('Animation will be saved to', f)
-    # writervideo = animation.FFMpegWriter(fps=10)
-    writervideo = animation.FFMpegWriter(fps=10, metadata=dict(artist='D. Liljestrand'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
+#     # save animation - may need to conda install ffmpeg, pip install might not work
+#     f = cwd+'//extrapolation//'+area+'//Predictions//20.0//Predictions//'+end_date+'_SWE.mp4'
+#     print('Animation will be saved to', f)
+#     # writervideo = animation.FFMpegWriter(fps=10)
+#     writervideo = animation.FFMpegWriter(fps=10, metadata=dict(artist='D. Liljestrand'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
 
-    # ani.save(f, writer=writervideo)
-    try:
-        ani.save(f, writer=writervideo)
-        print('Animation saved to', f)
-    except Exception as e:
-        print("Error saving animation:", e)
+#     # ani.save(f, writer=writervideo)
+#     try:
+#         ani.save(f, writer=writervideo)
+#         print('Animation saved to', f)
+#     except Exception as e:
+#         print("Error saving animation:", e)
 
     # Show the animation
     # fig.show()
@@ -204,3 +213,86 @@ def animate_SWE(cwd, area, end_date):
     return out
 
 
+def animate_SWE2(cwd, area, end_date):
+    """
+    Create a matplotlib animation of multiple date model inferences.
+        Args: 
+            cwd (str): current working directory. This should be the "Model" directory.
+            area (str): Name of the region to model.
+            end_date (str): 'YYYY-MM-DD' - Date of final model inference to plot.
+    """
+
+    # Load SWE predictions up to the end_date
+    preds = pd.read_csv(cwd + '//extrapolation//' + area + '//Predictions//submission_format_' + end_date + '.csv', index_col=[0])
+    preds.index.names = ['cell_id']
+
+    # Load feature dataframe & area shapefile
+    Geo_df = pd.read_csv(cwd + '//extrapolation//' + area + '//' + area + '_Geo_df.csv', index_col='cell_id')
+    shapefile_path = cwd + '//extrapolation//' + area + '//' + area + '.shp'
+    gdf_shapefile = gpd.read_file(shapefile_path)
+
+    # Make Geodataframe for plotting
+    preds = Geo_df.join(preds)
+    preds_gdf = gpd.GeoDataFrame(preds, geometry=gpd.points_from_xy(preds.Long, preds.Lat), crs="EPSG:4326")
+    
+    # Set up the figure and subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+
+    # Get the column names with the dates. To begin on a later date change the starting column slice.
+    date_columns = preds_gdf.columns[4:-1].tolist()
+    
+    # Initialize a list to store maximum predictions over time
+    max_preds = []
+    
+    # Load Mammoth Pass observed SWE values
+    MHP_SWE = pd.read_csv(cwd + '//extrapolation//Data//Mammoth_Pass_SWE.csv', index_col=[0])
+    
+    # Create a normalization instance for color mapping
+    cmap_ani = plt.cm.get_cmap('PuRd')  # Choose a colormap
+    norm = colors.Normalize(vmin=0, vmax=round(preds_gdf[preds_gdf.columns[4:-1]].max(axis=1).max() + 5.1, -1))
+    cax = fig.add_axes([0.935, 0.3, 0.01, 0.4])  # Adjust the position and size of the colorbar axis
+    # Create a colorbar for the entire plot
+    sm = plt.cm.ScalarMappable(cmap=cmap_ani, norm=norm)
+    cbar = plt.colorbar(sm, cax=cax)
+    cbar.ax.set_title('Est. SWE (in)', fontsize=10)
+
+    # Define the update function for each frame
+    def update(frame):
+        ax1.clear()
+        ax2.clear()
+ 
+        # Get the column name for the current frame
+        # date_column = frame
+        date_column = date_columns[frame]
+        
+        # Create masks for zero and non-zero values
+        mask_zero = preds_gdf[date_column] == 0
+        mask_non_zero = preds_gdf[date_column] != 0
+
+        # Plot non-zero values
+        preds_gdf[mask_non_zero].plot(ax=ax1, column=date_columns[frame], marker='s', markersize=260, cmap=cmap_ani, norm=norm, alpha=1)
+        gdf_shapefile.plot(ax=ax1, facecolor='none', edgecolor='black', linewidth=1)
+        cx.add_basemap(ax1, crs=preds_gdf.crs.to_string(), source=cx.providers.Esri.WorldTerrain, alpha=0.5)
+        ax1.set_title(f'{date_column}')
+        ax1.spines[['right', 'top']].set_visible(False)
+        
+        # Append the max prediction value for the current date
+        max_pred = preds_gdf[date_column].max()
+        max_preds.append(max_pred)
+
+        # Plot the max prediction time series
+        ax2.plot(date_columns[:len(max_preds)], max_preds, marker='o', color='r')
+        ax2.plot(MHP_SWE.index[:len(max_preds)], MHP_SWE.MHP_SWE_in[:len(max_preds)], marker='o', color='b')
+        ax2.set_title(f'Up to {date_column}') 
+        ax2.legend(['Model', 'MHP'], loc='lower right', frameon=False)
+        ax2.set_xlabel('Date')
+        ax2.set_ylabel('Maximum SWE (in)')
+        ax2.grid(True)
+        
+    def init():
+        print('Initializing WY 2022')
+    # Create the animation
+    ani = animation.FuncAnimation(fig, update, frames=len(date_columns), interval=1000, init_func=init, blit=False)
+  
+    plt.close()
+    return HTML(ani.to_jshtml())

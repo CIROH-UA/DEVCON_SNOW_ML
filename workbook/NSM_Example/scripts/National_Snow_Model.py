@@ -934,7 +934,20 @@ class SWE_Prediction():
         model = keras.models.load_model(f"{checkpoint_filepath}{Region}_model.keras")
         print(model)
         model = load_model(model)
-
+        
+        checkpoint_filepath = self.cwd + '/Model/' + Region + '/'
+            # load and scale data
+            if self.modeltype == "MLP":
+                # set up model checkpoint to be able to extract best models
+                model = keras.models.load_model(f"{checkpoint_filepath}{Region}_model.keras")
+                #model = checkpoint_filepath + Region + '_model.h5'
+                #print(model)
+                #model = load_model(model)
+                
+            elif self.modeltype == "GBM":
+                model = pickle.load(open(f"{checkpoint_filepath}{Region}_lgbm_model.pkl", "rb")) 
+            
+            
         # load SWE scaler
         SWEmax = np.load(checkpoint_filepath + Region + '_SWEmax.npy')
         SWEmax = SWEmax.item()
