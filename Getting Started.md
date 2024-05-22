@@ -69,7 +69,7 @@ With the package installed, we can connect the NSM_env to our Python Notebook
 To double check you have the correct working environment, open up the [Methods](./workbook/NSM_Example/methods.ipynb) file, click the kernel tab on the top toolbar, and select "notebook" from the dropdown. 
 The notebook should show up on the top right of the Jupyter Notebook.
 
-[DEVCON_SNOW_ML](./workbook/NSM_Example/Images/NSM-Kernel.JPG)
+![environment](./workbook/NSM_Example/Images/NSM-Kernel.JPG)
 
 ### Explore the model through an example
 
