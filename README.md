@@ -2,7 +2,7 @@
 
 This workbook builds on the ongoing Cooperative Institute for Research-to-Operations in Hydrology ([CIROH](https://ciroh.ua.edu/)) machine learning snow modeling project to provide operational, near-real-time snow-water-equivalent (SWE) estimates for updating the state of the snowpack within the National Water Model ([NWM](https://water.noaa.gov/about/nwm)).
 
-The [Getting started](./Getting%20Started.md) file will help new users create a virtual environment and install the correct packages using the [requirements.text](./requirements.txt).
+The [Getting started](./Getting%20Started.md) file will help new users create a virtual environment and install the correct packages using the [environment.yml](./environment.yml).
 
 ## Snow-Model Summary
 
