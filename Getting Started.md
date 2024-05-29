@@ -1,9 +1,10 @@
 
+# Getting Started:
 
-
-
-
-# Getting Started: 
+If using CIROH Resources, login to the 2i2c hub. Select a server option (Medium or Small) and choose DECVON_SNOW_ML from the dropdown list. 
+    
+    https://ciroh.awi.2i2c.cloud
+    
 The first step is to identify a folder location where you would like to work in a development environment.
 We suggest a location that will be able to easily access streamflow predictions to make for easy evaluation of your model.
 Using the command prompt, change your working directory to this folder and fork this repo [DEVCON_SNOW_ML](https://github.com/dliljest/DEVCON_SNOW_ML)
