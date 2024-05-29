@@ -1,7 +1,7 @@
 
 # Getting Started:
 
-If using CIROH Resources, login to the 2i2c hub. Select a server option (Medium or Small) and choose DECVON_SNOW_ML from the dropdown list. 
+If using CIROH Resources, login to the 2i2c hub. Select a server option (Medium or Small) and choose Neural Networks for Snow Modeling from the dropdown list. 
     
     https://ciroh.awi.2i2c.cloud
     
