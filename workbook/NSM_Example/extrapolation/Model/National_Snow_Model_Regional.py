@@ -29,7 +29,7 @@ import rasterio
 import geopandas as gpd
 from shapely.geometry import Point
 import xarray as xr
-# import netCDF4 as nc
+import netCDF4 as nc
 #from mpl_toolkits.basemap import Basemap
 from matplotlib.colors import LinearSegmentedColormap
 import folium
