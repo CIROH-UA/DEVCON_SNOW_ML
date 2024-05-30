@@ -127,6 +127,26 @@ def Model_train(cwd, epochs, RegionTrain, RegionTest, RegionObs_Train, RegionObs
         model.fit(X_train, y_train, epochs=epochs, batch_size=100,
                             validation_data=(X_test,y_test),shuffle=True,callbacks=[callback], verbose=0)
 
+#         # Define dropout rates
+#         dropout_rate1 = 0.2
+#         dropout_rate2 = 0.2
+#         dropout_rate3 = 0.2
+#         dropout_rate4 = 0.2
+#         dropout_rate5 = 0.2
+
+#         input_1 = layers.Input(shape=(shape[1],))
+#         x = layers.Dense(LD1, activation="relu")(input_1)
+#         x = layers.Dropout(dropout_rate1)(x)
+#         x = layers.Dense(LD2, activation="relu")(x)
+#         x = layers.Dropout(dropout_rate2)(x)
+#         x = layers.Dense(LD3, activation="relu")(x)
+#         x = layers.Dropout(dropout_rate3)(x)
+#         x = layers.Dense(LD4, activation="relu")(x)
+#         x = layers.Dropout(dropout_rate4)(x)
+#         x = layers.Dense(LD5, activation="relu")(x)
+#         x = layers.Dropout(dropout_rate5)(x)
+#         x = layers.Dense(LD6, activation="relu")(x)
+#         x = layers.Dense(1)(x)
 
 def Model_predict(cwd, RegionTest, RegionObs_Test, RegionTest_notScaled):
     
