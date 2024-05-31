@@ -2214,7 +2214,7 @@ class SWE_Prediction():
         path.close()
 
     
-    def SWE_Predict(self, SCA=True):
+    def SWE_Predict(self, SCA=False):
         # load first SWE observation forecasting dataset with prev and delta swe for observations.
 
         # if SCA:
@@ -2284,7 +2284,7 @@ class SWE_Prediction():
         self.subdf.to_csv(f"{self.cwd}//extrapolation//{self.area}//Predictions//submission_format_{self.date}.csv")
 
 
-    def Predict(self, Region, SCA=True):
+    def Predict(self, Region, SCA=False):
         """
             Run model inference on a region
 
