@@ -539,16 +539,16 @@ class Region_SWE_Simulation:
             bbox = Snow.getPredictionExtent()
 
             #Initialize/Download the granules
-            # Snow.initializeGranules(bbox, Snow.SCA_folder)
+            Snow.initializeGranules(bbox, Snow.SCA_folder)
             
             #Process observations into Model prediction ready format,
             Snow.Data_Processing()
 
             #Agument with SCA
-            # Snow.augmentPredictionDFs()
+            Snow.augmentPredictionDFs()
 
             #Sometimes need to run twice for some reason, has a hard time loading the model (distributed computation engines for each region (multithreaded, cpus, GPUs))
-            Snow.SWE_Predict(SCA=False)
+            Snow.SWE_Predict(SCA=True)
 
             #Make CONUS netCDF file, compressed.
             # Snow.netCDF_compressed(plot=False)
